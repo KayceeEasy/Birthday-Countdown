@@ -177,6 +177,31 @@
             gap: 2rem;
             flex-wrap: wrap;
             margin: 3rem 0;
+            transition: all 0.5s ease;
+        }
+
+        /* Birthday Mode Styling */
+        .birthday-active .countdown {
+            display: none;
+        }
+
+        .birthday-message {
+            display: none;
+            font-family: 'Great Vibes', cursive;
+            font-size: 4rem;
+            color: #d63384;
+            margin: 2rem 0;
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .birthday-active .birthday-message {
+            display: block;
         }
 
         .time-unit {
@@ -306,6 +331,7 @@
 
         @media (max-width: 768px) {
             h1 { font-size: 4rem; }
+            .birthday-message { font-size: 2.5rem; }
             .countdown { gap: 1rem; }
             .time-unit { min-width: 100px; padding: 2rem 1.5rem; }
             .number { font-size: 2.5rem; }
@@ -314,24 +340,21 @@
     </style>
 </head>
 <body>
-    <!-- Background orbs -->
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
     <div class="orb orb-3"></div>
 
-    <!-- Floating petals container -->
     <div id="petals-container"></div>
-
-    <!-- Floating hearts -->
     <div class="hearts-decoration" id="hearts-container"></div>
 
-    <div class="container">
+    <div class="container" id="main-container">
         <div class="frame"></div>
         
         <div class="crown">👑</div>
         <h1>Mi Reina</h1>
-        <div class="subtitle">Birthday Countdown</div>
+        <div class="subtitle" id="dynamic-subtitle">Birthday Countdown</div>
         
+        <!-- The Countdown -->
         <div class="countdown" id="countdown">
             <div class="time-unit">
                 <span class="number" id="days">00</span>
@@ -351,15 +374,20 @@
             </div>
         </div>
 
+        <!-- The Birthday Message (Shown only on April 28) -->
+        <div class="birthday-message" id="birthday-message">
+            Happy Birthday, My Queen! 💖
+        </div>
+
         <div class="date-display">April 28th</div>
         
-        <div class="message">
+        <div class="message" id="dynamic-message">
             "Every moment brings us closer to celebrating the queen who reigns supreme in my heart"
         </div>
     </div>
 
     <script>
-        // Create floating rose petals
+        // --- DECORATIONS ---
         const petalsContainer = document.getElementById('petals-container');
         const petalColors = ['#ffb7c5', '#ffc0cb', '#ffd1dc', '#ffb6c1', '#f8c8dc'];
         
@@ -374,7 +402,6 @@
             petalsContainer.appendChild(petal);
         }
 
-        // Create floating hearts
         const heartsContainer = document.getElementById('hearts-container');
         for (let i = 0; i < 15; i++) {
             const heart = document.createElement('div');
@@ -387,7 +414,6 @@
             heartsContainer.appendChild(heart);
         }
 
-        // Create sparkles
         for (let i = 0; i < 20; i++) {
             const sparkle = document.createElement('div');
             sparkle.className = 'sparkle';
@@ -397,32 +423,56 @@
             document.body.appendChild(sparkle);
         }
 
-        // Countdown logic
-        function updateCountdown() {
+        // --- COUNTDOWN & LOGIC ---
+        function updateUI() {
             const now = new Date();
             const currentYear = now.getFullYear();
-            let targetDate = new Date(currentYear, 3, 28); // April 28 (month is 0-indexed)
             
-            // If April 28 has passed this year, target next year
-            if (now > targetDate) {
-                targetDate = new Date(currentYear + 1, 3, 28);
+            // Define the Birthday (April 28)
+            const birthdayThisYear = new Date(currentYear, 3, 28, 0, 0, 0);
+            // Define the day after (April 29)
+            const dayAfter = new Date(currentYear, 3, 29, 0, 0, 0);
+
+            const container = document.getElementById('main-container');
+            const subtitle = document.getElementById('dynamic-subtitle');
+            const message = document.getElementById('dynamic-message');
+
+            // 1. IS IT THE BIRTHDAY TODAY? (April 28, 00:00 to 23:59)
+            if (now >= birthdayThisYear && now < dayAfter) {
+                container.classList.add('birthday-active');
+                subtitle.textContent = "It's Your Special Day!";
+                message.innerHTML = "Today, the world became brighter because you were born. May your day be as beautiful and wonderful as your soul. I love you! ❤️";
+                return; // Stop countdown logic for today
             }
 
+            // 2. IS THE BIRTHDAY OVER FOR THIS YEAR? (April 29 onwards)
+            container.classList.remove('birthday-active');
+            let targetYear = currentYear;
+            if (now >= dayAfter) {
+                targetYear = currentYear + 1;
+            }
+            
+            const targetDate = new Date(targetYear, 3, 28, 0, 0, 0);
             const diff = targetDate - now;
 
+            // Calculate units
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
             const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
+            // Update DOM
             document.getElementById('days').textContent = String(days).padStart(2, '0');
             document.getElementById('hours').textContent = String(hours).padStart(2, '0');
             document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
             document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+            
+            subtitle.textContent = "Birthday Countdown";
+            message.textContent = `"Every moment brings us closer to celebrating the queen who reigns supreme in my heart"`;
         }
 
-        updateCountdown();
-        setInterval(updateCountdown, 1000);
+        setInterval(updateUI, 1000);
+        updateUI();
     </script>
 </body>
 </html>
